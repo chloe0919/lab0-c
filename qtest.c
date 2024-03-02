@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "list_sort.h"
 
 #if defined(__APPLE__)
 #include <mach/mach_time.h>
@@ -66,6 +67,16 @@ typedef struct {
 
 static queue_chain_t chain = {.size = 0};
 static queue_contex_t *current = NULL;
+static int use_list_sort = 0;
+
+
+static int cmp(void *priv,
+               const struct list_head *l1,
+               const struct list_head *l2)
+{
+    return strcmp(list_entry(l1, element_t, list)->value,
+                  list_entry(l2, element_t, list)->value);
+}
 
 /* How many times can queue operations fail */
 static int fail_limit = BIG_LIST_SIZE;
@@ -599,8 +610,14 @@ bool do_sort(int argc, char *argv[])
 
     set_noallocate_mode(true);
     if (current && exception_setup(true))
-        q_sort(current->q, descend);
+        use_list_sort ? list_sort(NULL, current->q, cmp)
+                      : q_sort(current->q, descend);
     exception_cancel();
+
+    // if (current && exception_setup(true))
+    //     q_sort(current->q, descend);
+    // exception_cancel();
+    //////////////////////////////
     set_noallocate_mode(false);
 
     bool ok = true;
@@ -1060,6 +1077,8 @@ static void console_init()
               "Number of times allow queue operations to return false", NULL);
     add_param("descend", &descend,
               "Sort and merge queue in ascending/descending order", NULL);
+    add_param("listsort", &use_list_sort,
+              "Use the sort which is made by linux kernel developers", NULL);
 }
 
 /* Signal handlers */
