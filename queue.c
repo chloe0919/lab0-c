@@ -30,10 +30,8 @@ void q_free(struct list_head *l)
         return;
     element_t *n;
     element_t *node = list_first_entry(l, element_t, list);
-    list_for_each_entry_safe (node, n, l, list) {
-        // q_release_element(container_of(&node->list, element_t, list));
+    list_for_each_entry_safe (node, n, l, list)
         q_release_element(node);
-    }
     free(l);
 }
 
@@ -188,7 +186,6 @@ void q_reverse(struct list_head *head)
     list_for_each_safe (curr, n, head)
         list_move(curr, head);
 }
-
 /* Reverse the nodes of the list k at a time */
 void q_reverseK(struct list_head *head, int k)
 {
@@ -327,4 +324,3 @@ void q_shuffle(struct list_head *head)
     }
     return;
 }
-
